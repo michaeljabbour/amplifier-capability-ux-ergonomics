@@ -31,3 +31,7 @@ The credited [visual craft material](references/visual-craft.md) preserves disti
 Apply [adversarial verification](references/ergonomics-verification/METHOD.md), returning pass/revise/blocked with material gaps. Use [study design](references/usability-study-design/METHOD.md) for the lightest valid empirical check: population/variation, tasks/states/environment, behavior measures, assistance/critical errors/abandonment, moderation/counterbalance/access, analysis, stop rule, and generalization bounds. Small formative studies can expose breakdowns; they do not estimate prevalence. Questionnaires supplement behavior.
 
 Return a task-and-evidence map, prioritized findings, authority decisions, concrete changes, acceptance criteria, validation status, and unresolved evidence. An uncalibrated weighted rubric or a structural test is not observed benefit.
+
+## Optional coaching checkpoint
+
+Read [the local coaching guide](references/coaching-session.v1.md) only when the person asks for practice or optional session bookkeeping. Keep direct artifact production available; agree a small budget, preserve the baseline and stop on goal, user exit or no meaningful gain.
