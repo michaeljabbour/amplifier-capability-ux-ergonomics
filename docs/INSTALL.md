@@ -5,8 +5,8 @@
 Requires Git and Python 3.11+. From a terminal:
 
 ```sh
-git clone https://github.com/michaeljabbour/amplifier-skill-ux-ergonomics.git
-cd amplifier-skill-ux-ergonomics
+git clone https://github.com/michaeljabbour/amplifier-capability-ux-ergonomics.git
+cd amplifier-capability-ux-ergonomics
 python3 scripts/capability.py doctor
 python3 scripts/capability.py install --dest ~/.agents/skills
 ```
