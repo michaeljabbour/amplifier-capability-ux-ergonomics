@@ -10,13 +10,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def score(review, judgments, rubric, case):
     errors = []
-    if not isinstance(review, str) or not review.strip():
+    if not isinstance(review, str):
+        return {"status": "invalid-receipt", "errors": ["Review must be UTF-8 text"]}
+    try:
+        review_bytes = review.encode("utf-8")
+    except UnicodeError:
+        return {"status": "invalid-receipt", "errors": ["Review must be UTF-8 text"]}
+    if not review.strip():
         errors.append("A nonempty review artifact is required")
     if not isinstance(judgments, dict):
         return {"status": "invalid-receipt", "errors": errors + ["Judgments must be an object"]}
     if judgments.get("format") != "ux-adjudication/v1":
         errors.append("Expected ux-adjudication/v1")
-    if judgments.get("review_sha256") != hashlib.sha256(review.encode()).hexdigest():
+    if judgments.get("review_sha256") != hashlib.sha256(review_bytes).hexdigest():
         errors.append("Judgment/source hash mismatch")
     if judgments.get("case_id") != case["id"]:
         errors.append("Case ID mismatch")
@@ -66,6 +72,15 @@ def score(review, judgments, rubric, case):
             "limits": "Mechanical coverage, source binding and arithmetic only. Quotes do not prove semantic support, adjudicator independence, usability benefit or accessibility conformance."}
 
 
+def unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate JSON key: " + key)
+        result[key] = value
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("review", type=Path)
@@ -73,11 +88,20 @@ def main():
     args = parser.parse_args()
     rubric = yaml.safe_load((ROOT / "tests/evaluation-rubric.yaml").read_text())
     cases = yaml.safe_load((ROOT / "tests/benchmark-cases.yaml").read_text())["cases"]
-    judgments = json.loads(args.judgments.read_text())
+    try:
+        judgments = json.loads(args.judgments.read_bytes().decode("utf-8"), object_pairs_hook=unique_json_object)
+        review = args.review.read_bytes().decode("utf-8")
+    except (OSError, UnicodeError, ValueError) as error:
+        print(json.dumps({"status": "invalid-receipt", "errors": [str(error)]}, indent=2))
+        return 1
+    if not isinstance(judgments, dict):
+        print(json.dumps({"status": "invalid-receipt", "errors": ["Judgments must be an object"]}))
+        return 1
     selected = next((c for c in cases if c["id"] == judgments.get("case_id")), None)
     if selected is None:
         parser.error("Unknown benchmark case_id")
-    result = score(args.review.read_text(), judgments, rubric, selected)
+    # Preserve exact UTF-8 bytes when re-encoding, including CRLF and a BOM.
+    result = score(review, judgments, rubric, selected)
     print(json.dumps(result, indent=2))
     return 0 if result["status"] == "pass-on-supplied-judgments" else 1
 

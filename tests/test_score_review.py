@@ -1,7 +1,11 @@
 """Exposed fictional adjudication controls; no target-method outcome claims."""
 import copy
 import hashlib
+import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 import yaml
 from score_review import score
@@ -21,6 +25,35 @@ def receipt():
 
 
 class ScoreGateTests(unittest.TestCase):
+    def test_non_text_api_input_is_structured_invalid_receipt(self):
+        for value in (None, b"bytes", 7, False, [], "\ud800"):
+            with self.subTest(value=value):
+                self.assertEqual(score(value, receipt(), RUBRIC, CASE)["status"], "invalid-receipt")
+
+    def test_cli_preserves_raw_utf8_crlf_hash_and_rejects_duplicate_keys(self):
+        raw = (REVIEW + "\r\nSecond fictional line.\r\n").encode("utf-8")
+        record = receipt()
+        record["review_sha256"] = hashlib.sha256(raw).hexdigest()
+        with tempfile.TemporaryDirectory() as directory:
+            review_path = Path(directory) / "review.txt"
+            judgment_path = Path(directory) / "judgments.json"
+            review_path.write_bytes(raw)
+            command = [sys.executable, str(ROOT / "tests/score_review.py"), str(review_path), str(judgment_path)]
+            judgment_path.write_text(json.dumps(record))
+            valid = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
+            self.assertEqual(json.loads(valid.stdout)["status"], "pass-on-supplied-judgments")
+            key = next(iter(record["hard_failures"]))
+            serialized = json.dumps(record)
+            self.assertIn(json.dumps(key) + ": false", serialized)
+            ambiguous = serialized.replace(json.dumps(key) + ": false", json.dumps(key) + ": true, " + json.dumps(key) + ": false", 1)
+            judgment_path.write_text(ambiguous)
+            invalid = subprocess.run(command, capture_output=True, text=True)
+            self.assertNotEqual(invalid.returncode, 0)
+            result = json.loads(invalid.stdout)
+            self.assertEqual(result["status"], "invalid-receipt")
+            self.assertTrue(any("Duplicate JSON key" in message for message in result["errors"]))
+
     def test_complete_fictional_receipt_passes_mechanical_gate_only(self):
         result = score(REVIEW, receipt(), RUBRIC, CASE)
         self.assertEqual(result["status"], "pass-on-supplied-judgments")

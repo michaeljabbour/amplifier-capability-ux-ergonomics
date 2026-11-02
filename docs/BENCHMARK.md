@@ -24,6 +24,11 @@ authenticate the judge, decide whether a quotation entails a judgment, or show
 that the method improves usability. Keep semantic adjudication and disagreement
 records separate; a mechanically valid but incorrect judgment is still wrong.
 
+The CLI hashes the exact UTF-8 review bytes, preserving CRLF rather than
+normalizing newlines. Judgment JSON objects must have unique keys at every
+level; contradictory duplicate keys are invalid, regardless of order. The
+Python helper accepts text and returns an invalid receipt for other input types.
+
 For an actual comparison, freeze a real authorized task/state packet, baseline
 workflow, assistance, versions, time/cost budget and meaningful improvement
 criterion before running either arm. Include an evidence-free redesign trap,
