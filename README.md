@@ -54,6 +54,12 @@ Evidence gap: affected-user task observation pending
 
 ## What is checked
 
+For benchmark preparation, the [local adjudication gate](docs/BENCHMARK.md)
+checks complete rubric/case judgments against a nonempty hashed review. It
+rejects missing dimensions, incomplete case coverage and explicit hard failures.
+It checks supplied judgment structure and arithmetic; it does not judge prose,
+authenticate a reviewer or establish usability/accessibility outcomes.
+
 Native bundle structure, references and portable installation are checked. No usability study or accessibility-conformance claim is established by those structural checks; each product needs validation on its actual tasks and surfaces. See [validation](docs/VALIDATION.md) for the exact checks and limits.
 
 ## Retained implementation and references

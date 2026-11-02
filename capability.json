@@ -176,7 +176,8 @@
     "docs/NATIVE-README.md",
     "docs/NATIVE-INSTALL.md",
     "docs/evaluations/2026-10-28/consolidation.json",
-    "docs/OPTIONAL-CRAFT-ADAPTERS.md"
+    "docs/OPTIONAL-CRAFT-ADAPTERS.md",
+    "docs/BENCHMARK.md"
   ],
   "evidence_summary": "Native bundle structure, references and portable installation are checked. No usability study or accessibility-conformance claim is established by those structural checks; each product needs validation on its actual tasks and surfaces.",
   "publication_status": "Installation and evidence scopes are documented below.",
